@@ -21,53 +21,13 @@ EOT
     ttl                 = number
     zone_name           = string
     tags                = optional(map(string))
-    record = object({
+    record = list(object({
       port     = number
       priority = number
       target   = string
       weight   = number
-    })
+    }))
   }))
-  validation {
-    condition = alltrue([
-      for k, v in var.private_dns_srv_records : (
-        length(v.zone_name) > 0
-      )
-    ])
-    error_message = "must not be empty"
-  }
-  validation {
-    condition = alltrue([
-      for k, v in var.private_dns_srv_records : (
-        v.record.priority >= 0 && v.record.priority <= 65535
-      )
-    ])
-    error_message = "must be between 0 and 65535"
-  }
-  validation {
-    condition = alltrue([
-      for k, v in var.private_dns_srv_records : (
-        v.record.weight >= 0 && v.record.weight <= 65535
-      )
-    ])
-    error_message = "must be between 0 and 65535"
-  }
-  validation {
-    condition = alltrue([
-      for k, v in var.private_dns_srv_records : (
-        v.record.port >= 1 && v.record.port <= 65535
-      )
-    ])
-    error_message = "must be between 1 and 65535"
-  }
-  validation {
-    condition = alltrue([
-      for k, v in var.private_dns_srv_records : (
-        length(v.record.target) > 0
-      )
-    ])
-    error_message = "must not be empty"
-  }
   # --- Unconfirmed validation candidates, derived from azurerm_private_dns_srv_record's provider source ---
   # Not auto-enabled: either a bespoke provider validator we can't safely translate,
   # or a path that crosses a list-typed block (needs its own for_each wrapping).
@@ -88,6 +48,21 @@ EOT
   #   source:    [from resourcegroups.ValidateName: invalid when len(value) == 0]
   # path: resource_group_name
   #   source:    [from resourcegroups.ValidateName] !matched
+  # path: zone_name
+  #   condition: length(value) > 0
+  #   message:   must not be empty
+  # path: record.priority
+  #   condition: value >= 0 && value <= 65535
+  #   message:   must be between 0 and 65535
+  # path: record.weight
+  #   condition: value >= 0 && value <= 65535
+  #   message:   must be between 0 and 65535
+  # path: record.port
+  #   condition: value >= 1 && value <= 65535
+  #   message:   must be between 1 and 65535
+  # path: record.target
+  #   condition: length(value) > 0
+  #   message:   must not be empty
   # path: ttl
   #   source:    validation.IntBetween(1, math.MaxInt32) - bound(s) not a literal int (e.g. a named constant like math.MaxInt32) - resolve manually
   # path: tags
