@@ -2,9 +2,8 @@ resource "azurerm_private_dns_srv_record" "private_dns_srv_records" {
   for_each = var.private_dns_srv_records
 
   name                = each.value.name
-  resource_group_name = each.value.resource_group_name
+  private_dns_zone_id = each.value.private_dns_zone_id
   ttl                 = each.value.ttl
-  zone_name           = each.value.zone_name
   tags                = each.value.tags
 
   dynamic "record" {
